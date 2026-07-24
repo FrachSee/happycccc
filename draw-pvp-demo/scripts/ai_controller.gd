@@ -74,3 +74,32 @@ func _physics_process(delta: float) -> void:
 	# Hop occasionally to dodge arrows.
 	if target.weapon_type == "bow" and _rng.randf() < 0.015:
 		me.intent_jump = true
+
+	_try_skills(dist)
+
+
+# Fire a ready skill when its situational condition fits.
+func _try_skills(dist: float) -> void:
+	for i in range(me.skills.size()):
+		var skill: Dictionary = me.skills[i]
+		if skill["cd_left"] > 0.0:
+			continue
+		var use := false
+		match skill["id"]:
+			"regen_burst":
+				use = me.hp < me.max_hp * 0.55
+			"iron_wall":
+				use = dist < 170.0 and _rng.randf() < 0.03
+			"spike_burst":
+				use = dist < 130.0 and _rng.randf() < 0.2
+			"shadow_step":
+				use = me.hp < me.max_hp * 0.4 and dist < 140.0
+			"dash_strike":
+				use = dist > 120.0 and dist < 280.0 and _rng.randf() < 0.1
+			"flame_slash":
+				use = dist < me.reach + 60.0 and _rng.randf() < 0.2
+			"ice_shard", "power_shot":
+				use = dist < 520.0 and _rng.randf() < 0.04
+		if use:
+			me.intent_skill = i
+			break

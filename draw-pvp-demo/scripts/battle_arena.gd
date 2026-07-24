@@ -15,6 +15,8 @@ var _player_hp_bar: ProgressBar
 var _player_armor_bar: ProgressBar
 var _ai_hp_bar: ProgressBar
 var _ai_armor_bar: ProgressBar
+var _player_skill_labels: Array[Label] = []
+var _ai_skill_labels: Array[Label] = []
 var _hud: CanvasLayer
 var _finished := false
 
@@ -79,15 +81,15 @@ func _build_hud(player_loadouts: Dictionary, ai_loadouts: Dictionary) -> void:
 	_hud = CanvasLayer.new()
 	add_child(_hud)
 
-	var p := _build_fighter_panel("玩家", player_loadouts, Vector2(30, 20))
+	var p := _build_fighter_panel("玩家", player_loadouts, player, Vector2(30, 20), _player_skill_labels)
 	_player_hp_bar = p[0]
 	_player_armor_bar = p[1]
-	var a := _build_fighter_panel("AI 对手", ai_loadouts, Vector2(1280 - 30 - 420, 20))
+	var a := _build_fighter_panel("AI 对手", ai_loadouts, ai, Vector2(1280 - 30 - 420, 20), _ai_skill_labels)
 	_ai_hp_bar = a[0]
 	_ai_armor_bar = a[1]
 
 	var controls := Label.new()
-	controls.text = "A/D 移动  空格 跳跃  J 攻击  K 格挡(需蓝色护甲)"
+	controls.text = "A/D 移动  W/空格 跳跃  S 下蹲/速降  J 攻击  K 格挡(需蓝色护甲)  U/I/O 技能"
 	controls.position = Vector2(0, 690)
 	controls.size = Vector2(1280, 24)
 	controls.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -95,7 +97,7 @@ func _build_hud(player_loadouts: Dictionary, ai_loadouts: Dictionary) -> void:
 	_hud.add_child(controls)
 
 
-func _build_fighter_panel(fighter_name: String, loadouts: Dictionary, pos: Vector2) -> Array:
+func _build_fighter_panel(fighter_name: String, loadouts: Dictionary, fighter: Character, pos: Vector2, skill_labels: Array[Label]) -> Array:
 	var box := VBoxContainer.new()
 	box.position = pos
 	box.custom_minimum_size = Vector2(420, 0)
@@ -121,7 +123,37 @@ func _build_fighter_panel(fighter_name: String, loadouts: Dictionary, pos: Vecto
 	summary.add_theme_font_size_override("font_size", 13)
 	summary.add_theme_color_override("font_color", Color(0.72, 0.75, 0.85))
 	box.add_child(summary)
+
+	# Skill cooldown row (keys U / I / O).
+	var skill_row := HBoxContainer.new()
+	skill_row.add_theme_constant_override("separation", 14)
+	box.add_child(skill_row)
+	for i in range(fighter.skills.size()):
+		var label := Label.new()
+		label.add_theme_font_size_override("font_size", 14)
+		skill_row.add_child(label)
+		skill_labels.append(label)
 	return [hp_bar, armor_bar]
+
+
+func _process(_delta: float) -> void:
+	if player:
+		_update_skill_labels(player, _player_skill_labels)
+	if ai:
+		_update_skill_labels(ai, _ai_skill_labels)
+
+
+func _update_skill_labels(fighter: Character, labels: Array[Label]) -> void:
+	for i in range(mini(labels.size(), fighter.skills.size())):
+		var skill: Dictionary = fighter.skills[i]
+		var ready: bool = skill["cd_left"] <= 0.0
+		labels[i].text = "[%s] %s %s" % [
+			Skills.KEY_LABELS[i], skill["name"],
+			"就绪" if ready else "%.1fs" % skill["cd_left"],
+		]
+		labels[i].add_theme_color_override(
+			"font_color",
+			Color(0.55, 0.95, 0.6) if ready else Color(0.55, 0.57, 0.65))
 
 
 func _make_bar(fill_color: Color) -> ProgressBar:

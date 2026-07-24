@@ -71,7 +71,7 @@ static func _build_weapon(data: LoadoutData, density: float, aspect: float, tone
 	else:
 		# Sparse drawing -> bow: ranged projectile.
 		data.weapon_type = "bow"
-		data.atk = 7.0 + density * 40.0
+		data.atk = 10.0 + density * 50.0
 		data.reach = 400.0
 		type_name = "弓(远程)"
 
@@ -108,6 +108,7 @@ static func _build_armor(data: LoadoutData, density: float, aspect: float, tone:
 			data.special = "shield"
 			special_name = " · 可格挡(K)"
 		"dark":
+			data.special = "heavy"
 			data.armor_hp += 25.0
 			data.defense += 2.0
 			special_name = " · 重甲"
