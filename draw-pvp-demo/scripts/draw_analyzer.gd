@@ -31,6 +31,8 @@ static func analyze(image: Image, slot: int) -> LoadoutData:
 	var avg := Color(sum_r / count, sum_g / count, sum_b / count)
 	var brightness := (avg.r + avg.g + avg.b) / 3.0
 	var tone := _classify_tone(avg, brightness)
+	data.aspect = aspect
+	data.main_color = avg
 
 	match slot:
 		LoadoutData.Slot.WEAPON:

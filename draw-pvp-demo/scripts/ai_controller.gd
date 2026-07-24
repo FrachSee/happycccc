@@ -59,6 +59,13 @@ func _physics_process(delta: float) -> void:
 				me.intent_move = 0.0
 				if me.attack_cooldown <= 0.0 and _rng.randf() < 0.35:
 					me.intent_attack = true
+					# Occasionally use a directional special (W+J / S+J).
+					if me.special_cooldown <= 0.0:
+						var roll := _rng.randf()
+						if roll < 0.25:
+							me.intent_attack_dir = 1
+						elif roll < 0.5 and me.is_on_floor():
+							me.intent_attack_dir = 2
 		"retreat":
 			me.intent_move = -dir
 			if _rng.randf() < 0.02:

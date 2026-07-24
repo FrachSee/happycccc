@@ -128,7 +128,6 @@ func _on_start_pressed() -> void:
 	for slot in _canvases:
 		var img: Image = _canvases[slot].get_image()
 		var data := DrawAnalyzer.analyze(img, slot)
-		if img.get_used_rect().size.x > 0:
-			data.texture = RenderEffect.render(img)
+		data.texture = WeaponSpriteFactory.texture_for_slot(img, slot)
 		loadouts[slot] = data
 	drawing_finished.emit(loadouts)

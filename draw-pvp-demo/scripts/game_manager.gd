@@ -43,7 +43,7 @@ func _generate_ai_loadouts() -> Dictionary:
 	for slot in [LoadoutData.Slot.WEAPON, LoadoutData.Slot.ARMOR, LoadoutData.Slot.ACCESSORY]:
 		var img := _random_drawing(slot)
 		var data := DrawAnalyzer.analyze(img, slot)
-		data.texture = RenderEffect.render(img)
+		data.texture = WeaponSpriteFactory.texture_for_slot(img, slot)
 		out[slot] = data
 	return out
 

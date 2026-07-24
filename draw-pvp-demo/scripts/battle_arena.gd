@@ -49,21 +49,85 @@ func setup(player_loadouts: Dictionary, ai_loadouts: Dictionary) -> void:
 
 
 func _build_arena() -> void:
-	var bg := ColorRect.new()
-	bg.color = Color(0.10, 0.11, 0.17)
-	bg.size = Vector2(1280, 720)
-	bg.z_index = -10
-	add_child(bg)
+	var camera := Camera2D.new()
+	camera.position = Vector2(640, 360)
+	add_child(camera)
+	camera.make_current()
 
+	# Gradient dusk sky (vertex-colored quad).
+	var sky := Polygon2D.new()
+	sky.polygon = PackedVector2Array([
+		Vector2(0, 0), Vector2(1280, 0), Vector2(1280, 720), Vector2(0, 720)
+	])
+	sky.vertex_colors = PackedColorArray([
+		Color(0.06, 0.07, 0.16), Color(0.09, 0.07, 0.18),
+		Color(0.30, 0.16, 0.28), Color(0.26, 0.14, 0.24),
+	])
+	sky.z_index = -20
+	add_child(sky)
+
+	# Moon and stars.
+	var moon := Polygon2D.new()
+	var moon_points := PackedVector2Array()
+	for i in range(24):
+		var a := TAU * i / 24.0
+		moon_points.append(Vector2(cos(a), sin(a)) * 46.0)
+	moon.polygon = moon_points
+	moon.color = Color(0.94, 0.92, 0.82, 0.9)
+	moon.position = Vector2(1050, 120)
+	moon.z_index = -19
+	add_child(moon)
+	var star_rng := RandomNumberGenerator.new()
+	star_rng.seed = 42
+	for i in range(40):
+		var star := ColorRect.new()
+		star.size = Vector2(2, 2)
+		star.color = Color(1, 1, 1, star_rng.randf_range(0.25, 0.8))
+		star.position = Vector2(star_rng.randf_range(0, 1280), star_rng.randf_range(0, 420))
+		star.z_index = -19
+		add_child(star)
+
+	# Distant hill silhouettes (two cheap parallax-style layers).
+	_add_ridge(Color(0.13, 0.10, 0.22), 470.0, 90.0, 7)
+	_add_ridge(Color(0.18, 0.12, 0.24), 530.0, 55.0, 9)
+
+	# Ground with tile seams and a lit top edge.
 	var floor_visual := ColorRect.new()
-	floor_visual.color = Color(0.25, 0.22, 0.28)
+	floor_visual.color = Color(0.24, 0.19, 0.28)
 	floor_visual.position = Vector2(0, FLOOR_Y)
 	floor_visual.size = Vector2(1280, 720 - FLOOR_Y)
 	add_child(floor_visual)
+	var edge := ColorRect.new()
+	edge.color = Color(0.45, 0.35, 0.5)
+	edge.position = Vector2(0, FLOOR_Y)
+	edge.size = Vector2(1280, 5)
+	add_child(edge)
+	for x in range(0, 1280, 80):
+		var seam := ColorRect.new()
+		seam.color = Color(0.16, 0.12, 0.2)
+		seam.position = Vector2(x, FLOOR_Y + 5)
+		seam.size = Vector2(3, 720 - FLOOR_Y - 5)
+		add_child(seam)
 
 	_add_static_box(Vector2(640, FLOOR_Y + 50), Vector2(1280, 100)) # floor
 	_add_static_box(Vector2(-20, 360), Vector2(40, 720)) # left wall
 	_add_static_box(Vector2(1300, 360), Vector2(40, 720)) # right wall
+
+
+func _add_ridge(color: Color, base_y: float, height: float, peaks: int) -> void:
+	var ridge := Polygon2D.new()
+	var points := PackedVector2Array()
+	points.append(Vector2(0, FLOOR_Y))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(base_y) + peaks
+	for i in range(peaks + 1):
+		var x := 1280.0 * i / peaks
+		points.append(Vector2(x, base_y - rng.randf_range(0.2, 1.0) * height))
+	points.append(Vector2(1280, FLOOR_Y))
+	ridge.polygon = points
+	ridge.color = color
+	ridge.z_index = -18
+	add_child(ridge)
 
 
 func _add_static_box(pos: Vector2, size: Vector2) -> void:
@@ -89,7 +153,7 @@ func _build_hud(player_loadouts: Dictionary, ai_loadouts: Dictionary) -> void:
 	_ai_armor_bar = a[1]
 
 	var controls := Label.new()
-	controls.text = "A/D 移动  W/空格 跳跃  S 下蹲/速降  J 攻击  K 格挡(需蓝色护甲)  U/I/O 技能"
+	controls.text = "A/D 移动  K/W/空格 跳跃  S 下蹲/速降  J 攻击  W+J/S+J 派生技  L 格挡(需蓝甲)  U/I/O 技能"
 	controls.position = Vector2(0, 690)
 	controls.size = Vector2(1280, 24)
 	controls.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

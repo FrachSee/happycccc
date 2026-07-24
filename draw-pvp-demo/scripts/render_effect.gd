@@ -17,6 +17,11 @@ const GLOW_RADIUS := 2
 
 
 static func render(src: Image) -> ImageTexture:
+	return ImageTexture.create_from_image(stylize(src))
+
+
+# Quantize + glow, returning the processed Image (same size as src).
+static func stylize(src: Image) -> Image:
 	var w := src.get_width()
 	var h := src.get_height()
 	var out := Image.create(w, h, false, Image.FORMAT_RGBA8)
@@ -45,7 +50,7 @@ static func render(src: Image) -> ImageTexture:
 						var glow := c.lightened(0.35)
 						glow.a = 0.35
 						out.set_pixel(px, py, glow)
-	return ImageTexture.create_from_image(out)
+	return out
 
 
 static func _nearest_palette(c: Color) -> Color:
