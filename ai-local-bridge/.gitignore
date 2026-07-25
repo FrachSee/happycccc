@@ -2,3 +2,8 @@
 config.json
 # cloudflared 二进制,请自行到官方发布页下载
 cloudflared.exe
+# PyInstaller 打包产物
+build/
+dist/
+*.spec
+__pycache__/
