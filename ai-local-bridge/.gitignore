@@ -1,0 +1,4 @@
+# 含有你的私人令牌,切勿提交到任何仓库
+config.json
+# cloudflared 二进制,请自行到官方发布页下载
+cloudflared.exe
